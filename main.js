@@ -10,9 +10,9 @@ function makeRequest(url, callback) {
         });
 }
 
-// makeRequest(`https://api.moxfield.com/v2/decks/all/LRgw70Zef0a-kRLsiyq2ZQ`, (response) => {
-//     new MoxfieldParser(response.data).bling()
-// })
+makeRequest(`https://api.moxfield.com/v2/decks/all/LRgw70Zef0a-kRLsiyq2ZQ`, (response) => {
+    new MoxfieldParser(response.data).bling()
+})
 
 makeRequest("https://archidekt.com/api/decks/2159483/", (response) => {
     new ArchidektParser(response.data).bling()
@@ -27,14 +27,34 @@ class DeckBlinger {
         return Math.round(num * 100) / 100
     }
 
-    bling(parser) {
+    getFoilPrice(cardObj) {
+        console.error("Not implemented")
+    }
+
+    needsFoiling(cardObj) {
+        console.error("Not implemented")
+    }
+
+    getScryfallCardObj(cardObj) {
+        console.error("Not implemented")
+    }
+
+    getCommanders() {
+        console.error("Not implemented")
+    }
+
+    getMainboard() {
+        console.error("Not implemented")
+    }
+
+    bling() {
         let cost = 0
         let highestCost = 0
         let highestCostCard = ""
-        const commanders = parser.getCommanders()
+        const commanders = this.getCommanders()
         Object.keys(commanders).forEach(commander => {
-            if (parser.needsFoiling(commanders[commander])) {
-                let foilCost = parser.getFoilPrice(commanders[commander])
+            if (this.needsFoiling(commanders[commander])) {
+                let foilCost = this.getFoilPrice(commanders[commander])
                 if (foilCost > highestCost) {
                     highestCost = foilCost
                     highestCostCard = commanders[commander].name
@@ -46,13 +66,11 @@ class DeckBlinger {
         })
     
         let prices = []
-        const mainboard = parser.getMainboard()
+        const mainboard = this.getMainboard()
         Object.keys(mainboard).forEach(cardName => {
             const cardObj = mainboard[cardName]
-            if (parser.needsFoiling(cardObj)) {
-                console.log(cardName)
-                let foilCost = parser.getFoilPrice(cardObj)
-                console.log(foilCost)
+            if (this.needsFoiling(cardObj)) {
+                let foilCost = this.getFoilPrice(cardObj)
                 prices.push({ cardName, foilCost })
     
                 if (foilCost > highestCost) {
@@ -78,10 +96,6 @@ class DeckBlinger {
 class MoxfieldParser extends DeckBlinger {
     constructor(deck) {
         super(deck)
-    }
-
-    bling() {
-        super.bling(this)
     }
 
     getFoilPrice(cardObj) {
@@ -110,17 +124,12 @@ class ArchidektParser extends DeckBlinger {
         super(deck)
     }
 
-    bling() {
-        super.bling(this)
-    }
-
     getFoilPrice(cardObj) {
         return cardObj.card.prices.tcgfoil
     }
 
     needsFoiling(cardObj) {
-        console.log(`${cardObj.card.oracleCard.name}: ${!cardObj.modifier === "Foil"}`)
-        return !cardObj.modifier === "Foil" && cardObj.card.prices.tcgfoil
+        return !cardObj.modifier.includes("Foil") && cardObj.card.prices.tcgfoil
     }
 
     getScryfallCardObj(cardObj) {
